@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Doctor Handover Snapshot - {{ p.Name }}{% endblock %}
+{% block content %}
+<main class="container" style="padding-top: 30px;">
+  <div class="card handover-box">
+    <div class="handover-header">
+      <div>
+        <span class="pill">👨‍⚕️ Clinical Handover Snapshot</span>
+        <h1>{{ p.Name }} <small>({{ p.Patient_ID }})</small></h1>
+        <p class="muted">{{ age }} yrs · {{ p.Gender }} · Blood Group: <b>{{ p.Blood_Group }}</b> · Status: <span class="status">{{ p.Patient_Status }}</span></p>
+      </div>
+      <div class="response-badge {{ response.badge }}">
+        <span>{{ response.icon }} Treatment Status</span>
+        <b>{{ response.status }}</b>
+      </div>
+    </div>
+
+    {% if alerts %}
+    <div class="flashes" style="width:100%; margin-bottom:16px;">
+      {% for a in alerts %}
+      <div class="flash error">⚠️ {{ a }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="two">
+      <div class="card" style="margin:0;">
+        <h2>📋 Primary Conditions & Treatment</h2>
+        <p><b>Active Diagnosis:</b> {{ p.Latest_Diagnosis }} <small class="muted">({{ explain(p.Latest_Diagnosis) }})</small></p>
+        <p><b>Current Regimen:</b> {{ p.Current_Treatment_Plan }}</p>
+        <p><b>Attending Physician:</b> {{ p.Latest_Doctor }} · <b>Last Visit:</b> {{ p.Latest_Consultation_Date }}</p>
+        <p><b>Next Review Scheduled:</b> {{ p.Next_Follow_up }}</p>
+      </div>
+
+      <div class="card" style="margin:0;">
+        <h2>📊 Vitals Baseline Summary</h2>
+        <div class="vitals">
+          {% for v in vitals %}
+          <div class="vital {{ v.state }}">
+            <span>{{ v.label }}</span>
+            <b>{{ v.value }}<small> {{ v.unit }}</small></b>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <h2>📝 Doctor Handover Notes & Observations</h2>
+      <p class="muted">Structured clinical observations left for cross-specialist handovers:</p>
+      <div class="timeline">
+        {% for c in consults %}
+        <div class="t-item">
+          <span class="t-dot {{ c.Severity|lower }}"></span>
+          <div class="t-body">
+            <div class="t-top">
+              <b>Visit {{ c.Visit_No }} · {{ c.Doctor }} ({{ c.Specialist }})</b>
+              <span class="sev {{ c.Severity|lower }}">{{ c.Severity }}</span>
+            </div>
+            <div class="muted small">{{ c.Date }} · Diagnosis: <b>{{ c.Diagnosis }}</b></div>
+            <div class="handover-note-box" style="margin-top:8px; padding:10px 14px; background:#f0fdfa; border-left:4px solid var(--teal); border-radius:8px;">
+              <b>Clinical Note:</b> {{ c.Handover_Notes if c.Handover_Notes else "Standard consultation completed." }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:12px;">
+      <a href="{{ url_for('profile') }}" class="btn btn-primary">← Back to Patient Profile</a>
+      <a href="{{ url_for('emergency_view', pid=p.Patient_ID) }}" class="btn btn-ghost">🚑 View Emergency Card</a>
+    </div>
+  </div>
+</main>
+{% endblock %}

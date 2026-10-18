@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}QR Scanner & Manual Search - MediQR{% endblock %}
+{% block content %}
+<main class="container" style="padding-top: 30px;">
+  <div class="card scanner-box">
+    <span class="pill">📷 Reliable QR Scanner & Search</span>
+    <h1>Scan Patient or Consultation QR Code</h1>
+    <p class="muted">Point your camera at a MediQR code, or enter a Patient ID / Token manually below.</p>
+
+    <div class="scanner-grid">
+      <div class="camera-card">
+        <h3>Live Camera Scanner</h3>
+        <div class="camera-viewport">
+          <div class="scan-laser"></div>
+          <p class="small muted">Position QR code inside frame</p>
+        </div>
+        <p class="muted small" style="margin-top:10px;">Camera scanner supported on mobile browsers and devices with active camera permission.</p>
+      </div>
+
+      <div class="manual-search-card card">
+        <h3>🔍 Manual Lookup Fallback</h3>
+        <p class="muted small">Scan failed or code unreadable? Search directly by Patient ID or QR Token.</p>
+
+        <form method="get" action="" id="searchForm" style="margin-top:14px;">
+          <label>Enter Patient ID / Token
+            <input name="query" id="searchInput" placeholder="e.g. P-001 or PAT-QR-..." required>
+          </label>
+          <button type="button" onclick="handleSearch()" class="btn btn-primary full">Search Medical Record →</button>
+        </form>
+
+        <div style="margin-top:20px; padding:12px; background:#f0fdfa; border-radius:12px; border:1px solid var(--mint);">
+          <b>Try Demo IDs / Tokens:</b>
+          <ul style="margin:6px 0 0; padding-left:20px; font-size:.88rem;">
+            <li><code>P-001</code> (Arjun - Pre-diabetes)</li>
+            <li><code>P-002</code> (Priya - Asthma)</li>
+            <li><code>P-006</code> (Suresh - Hypertension)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+function handleSearch() {
+  var val = document.getElementById('searchInput').value.trim();
+  if (!val) return;
+  if (val.toUpperCase().startsWith('PAT-QR-') || val.toUpperCase().startsWith('CON-QR-')) {
+    window.location.href = '/qr/scan/' + encodeURIComponent(val);
+  } else {
+    window.location.href = '/emergency/' + encodeURIComponent(val);
+  }
+}
+</script>
+{% endblock %}

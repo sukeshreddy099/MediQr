@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Emergency Card - {{ p.Name }}{% endblock %}
+{% block content %}
+<main class="container" style="padding-top: 30px;">
+  <div class="card emergency-hero">
+    <div class="e-badge">🚨 FIRST RESPONDER & EMERGENCY VIEW</div>
+    <div class="e-header">
+      <div>
+        <h1 class="e-name">{{ p.Name }}</h1>
+        <p class="muted">{{ p.Patient_ID }} · {{ age }} yrs · {{ p.Gender }}</p>
+      </div>
+      <div class="blood-pill">{{ p.Blood_Group }}</div>
+    </div>
+
+    <div class="e-grid">
+      <div class="e-card-box">
+        <h3>🚑 Primary Emergency Contact</h3>
+        <p class="e-big">{{ p.Emergency_Contact_Name }}</p>
+        <a class="btn btn-primary full" href="tel:{{ p.Emergency_Contact_No }}">📞 Call {{ p.Emergency_Contact_No }}</a>
+      </div>
+
+      <div class="e-card-box">
+        <h3>🩸 Blood Group & Identity</h3>
+        <p><b>Blood Group:</b> <span class="blood">{{ p.Blood_Group }}</span></p>
+        <p><b>Aadhaar ID:</b> {{ p.Aadhaar_No }}</p>
+        <p><b>Mobile:</b> {{ p.Mobile_No }}</p>
+      </div>
+
+      <div class="e-card-box wide">
+        <h3>🩺 Critical Condition & Treatment</h3>
+        <p><b>Primary Diagnosis:</b> <span class="tag red">{{ p.Latest_Diagnosis }}</span></p>
+        <p><b>Current Treatment Plan:</b> {{ p.Current_Treatment_Plan }}</p>
+        <p><b>Attending Physician:</b> {{ p.Latest_Doctor }} ({{ p.Latest_Consultation_Date }})</p>
+      </div>
+    </div>
+
+    <div class="vitals" style="margin-top: 20px;">
+      <div class="vital ok">
+        <span>Heart Rate</span>
+        <b>{{ p.Heart_Rate_bpm }}<small> bpm</small></b>
+      </div>
+      <div class="vital watch">
+        <span>Blood Pressure</span>
+        <b>{{ p.Blood_Pressure_mmHg }}<small> mmHg</small></b>
+      </div>
+      <div class="vital ok">
+        <span>Oxygen SpO₂</span>
+        <b>{{ p["Oxygen_Saturation_%"] }}<small> %</small></b>
+      </div>
+      <div class="vital ok">
+        <span>Temperature</span>
+        <b>{{ p.Temperature_C }}<small> °C</small></b>
+      </div>
+    </div>
+
+    <div class="e-qr-card">
+      <div>
+        <h3>Emergency Patient QR Code</h3>
+        <p class="muted small">Scan this code on any mobile device to view this emergency summary instantly.</p>
+      </div>
+      <div class="qr-box">
+        <svg viewBox="0 0 100 100" width="100" height="100" style="background:#fff; padding:6px; border-radius:10px;">
+          <rect x="10" y="10" width="25" height="25" fill="#0f766e"/>
+          <rect x="65" y="10" width="25" height="25" fill="#0f766e"/>
+          <rect x="10" y="65" width="25" height="25" fill="#0f766e"/>
+          <rect x="40" y="40" width="20" height="20" fill="#0e7490"/>
+          <rect x="70" y="70" width="20" height="20" fill="#0f766e"/>
+        </svg>
+      </div>
+    </div>
+
+    <div style="margin-top:20px; text-align:center;">
+      <a href="{{ url_for('profile') }}" class="btn btn-ghost">← Return to Full Patient Profile</a>
+    </div>
+  </div>
+</main>
+{% endblock %}

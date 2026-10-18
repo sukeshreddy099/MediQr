@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f766e">
+  <title>{% block title %}MediQR{% endblock %} · AI Medical History System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <header class="nav">
+    <a class="brand" href="{{ url_for('main') }}"><span class="logo">+</span> MediQR</a>
+    <nav>
+      <a href="{{ url_for('main') }}">Home</a>
+      <a href="{{ url_for('prep_view') }}">Visit Prep</a>
+      {% if is_admin %}
+        <a href="{{ url_for('admin_dashboard') }}" style="color:#0f766e; font-weight:700;">⚙️ Admin Panel</a>
+        <a class="btn btn-sm btn-light" href="{{ url_for('logout') }}">Log out</a>
+      {% elif me %}
+        <a href="{{ url_for('profile') }}">My Profile</a>
+        <a class="btn btn-sm btn-light" href="{{ url_for('logout') }}">Log out</a>
+      {% else %}
+        <a class="btn btn-sm btn-light" href="{{ url_for('register') }}">Sign in</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% if msgs %}<div class="flashes">
+      {% for cat, m in msgs %}<div class="flash {{ cat }}">{{ m }}</div>{% endfor %}
+    </div>{% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+
+  <!-- Medical Scan Modal Viewer Overlay -->
+  <div id="scanModalOverlay" class="scan-modal-overlay" style="display:none;">
+    <div class="scan-modal-container">
+      <div class="scan-modal-header">
+        <h3 id="modalScanTitle">Diagnostic Scan Inspector</h3>
+        <button type="button" onclick="closeScanModal()" class="scan-modal-close">✕</button>
+      </div>
+      <div class="scan-modal-body">
+        <img id="modalScanImg" src="" alt="Medical Scan Inspector" class="scan-inspect-img">
+      </div>
+      <div class="scan-modal-footer">
+        <div class="scan-toolbar">
+          <button type="button" onclick="zoomIn()" class="btn btn-sm btn-light">🔍 Zoom +</button>
+          <button type="button" onclick="zoomOut()" class="btn btn-sm btn-light">🔍 Zoom -</button>
+          <button type="button" onclick="toggleInvert()" class="btn btn-sm btn-light">🌗 Invert X-Ray</button>
+          <button type="button" onclick="toggleContrast()" class="btn btn-sm btn-light">⚡ High Contrast</button>
+          <button type="button" onclick="resetScan()" class="btn btn-sm btn-light">🔄 Reset</button>
+        </div>
+        <p id="modalScanMeta" class="muted small" style="margin:8px 0 0; text-align:center;"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentZoom = 1;
+    let isInverted = false;
+    let isHighContrast = false;
+
+    function openScanModal(imgUrl, title, meta) {
+      document.getElementById('modalScanImg').src = imgUrl;
+      document.getElementById('modalScanTitle').innerText = title || 'Diagnostic Scan Inspector';
+      document.getElementById('modalScanMeta').innerText = meta || '';
+      document.getElementById('scanModalOverlay').style.display = 'flex';
+      resetScan();
+    }
+
+    function closeScanModal() {
+      document.getElementById('scanModalOverlay').style.display = 'none';
+    }
+
+    function zoomIn() {
+      currentZoom += 0.2;
+      applyTransform();
+    }
+
+    function zoomOut() {
+      if (currentZoom > 0.6) currentZoom -= 0.2;
+      applyTransform();
+    }
+
+    function toggleInvert() {
+      isInverted = !isInverted;
+      applyFilters();
+    }
+
+    function toggleContrast() {
+      isHighContrast = !isHighContrast;
+      applyFilters();
+    }
+
+    function resetScan() {
+      currentZoom = 1;
+      isInverted = false;
+      isHighContrast = false;
+      applyTransform();
+      applyFilters();
+    }
+
+    function applyTransform() {
+      const img = document.getElementById('modalScanImg');
+      img.style.transform = `scale(${currentZoom})`;
+    }
+
+    function applyFilters() {
+      const img = document.getElementById('modalScanImg');
+      let filters = [];
+      if (isInverted) filters.push('invert(100%)');
+      if (isHighContrast) filters.push('contrast(200%)');
+      img.style.filter = filters.length > 0 ? filters.join(' ') : 'none';
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('scanModalOverlay');
+      if (event.target == modal) {
+        closeScanModal();
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% block title %}{{ p.Name }}'s Health Record{% endblock %}
+{% block content %}
+<section class="profile-head">
+  <div class="avatar">{{ p.Name[0] }}</div>
+  <div class="who">
+    <h1>{{ p.Name }}</h1>
+    <p>{{ p.Patient_ID }} · {{ age }} yrs · {{ p.Gender }} · <span class="status">{{ p.Patient_Status }}</span></p>
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <a class="btn btn-sm btn-light" href="{{ url_for('emergency_view', pid=p.Patient_ID) }}">🚑 Emergency Card</a>
+    <a class="btn btn-sm btn-light" href="{{ url_for('handover_view', pid=p.Patient_ID) }}">👨‍⚕️ Handover Snapshot</a>
+    <a class="btn btn-sm btn-light" href="{{ url_for('audit_view') }}">🔒 Access Audit Log</a>
+    <a class="btn btn-sm btn-light" href="{{ url_for('logout') }}">Log out</a>
+  </div>
+</section>
+
+<main class="container pull-up">
+  <!-- Patient Summary QR Code & PDF Export Banner -->
+  <div class="card patient-qr-banner" style="background: linear-gradient(135deg, #f0fdfa, #fff); border:1px solid var(--mint);">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;">
+      <div style="flex:1; min-width:280px;">
+        <span class="pill">📱 Patient-Specific QR Code</span>
+        <h2>Secure Patient Medical Summary QR</h2>
+        <p class="muted small">Token ID: <code>{{ patient_qr_token }}</code></p>
+        <p class="muted" style="font-size:.92rem; margin-top:6px;">Scan to open emergency summary. Contains no raw medical history unencrypted.</p>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+          <a href="{{ url_for('qr_image', token_id=patient_qr_token) }}" target="_blank" class="btn btn-sm btn-primary">🔍 View QR Code</a>
+          <a href="{{ url_for('download_patient_pdf', pid=p.Patient_ID) }}" class="btn btn-sm btn-primary">📄 Download Summary PDF Report</a>
+          <form method="post" action="{{ url_for('revoke_qr', token_id=patient_qr_token) }}" style="display:inline;" onsubmit="return confirm('Revoke this QR code? Existing printed copies will be invalidated.');">
+            <button class="btn btn-sm btn-light" style="color:#dc2626;">🛑 Revoke / Replace QR</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="qr-display-box" style="text-align:center; background:#fff; padding:14px; border-radius:14px; border:1px solid var(--line); box-shadow:0 4px 12px rgba(0,0,0,.05);">
+        <img src="{{ url_for('qr_image', token_id=patient_qr_token) }}" width="110" height="110" alt="Patient QR Code" style="display:block; margin:0 auto;">
+        <span class="muted small" style="display:block; margin-top:4px;">Patient QR Code</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions & Completeness Score Header -->
+  <div class="card action-banner">
+    <div class="banner-grid">
+      <div class="completeness-box">
+        <div class="c-top">
+          <b>Profile Completeness Score</b>
+          <span class="c-score">{{ completeness.score }}%</span>
+        </div>
+        <div class="c-bar"><div class="c-fill" style="width: {{ completeness.score }}%;"></div></div>
+        {% if completeness.missing %}
+        <p class="muted small">Recommended updates: {{ completeness.missing|join(', ') }}</p>
+        {% else %}
+        <p class="muted small">✔ Essential profile data is 100% complete.</p>
+        {% endif %}
+      </div>
+
+      <div class="response-card {{ response.badge }}">
+        <div class="r-top">
+          <span class="r-icon">{{ response.icon }}</span>
+          <b>Treatment Response Indicator</b>
+        </div>
+        <div class="r-status">{{ response.status }}</div>
+        <p class="small">{{ response.text }}</p>
+      </div>
+
+      <div class="quick-nav-box">
+        <b>Quick Access Features</b>
+        <div class="q-links">
+          <a class="btn btn-sm btn-ghost" href="{{ url_for('prep_view') }}">📋 Visit Preparation Checklist</a>
+          <a class="btn btn-sm btn-ghost" href="{{ url_for('scanner') }}">📷 Open Web QR Scanner</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if alerts %}
+  <div class="flashes" style="width:100%; margin-bottom:16px;">
+    {% for a in alerts %}
+    <div class="flash error">⚠️ {{ a }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Personal Details & Emergency View -->
+  <div class="two">
+    <div class="card">
+      <h2>Personal details</h2>
+      <dl class="details">
+        <div><dt>Date of birth</dt><dd>{{ p.DOB }}</dd></div>
+        <div><dt>Blood group</dt><dd><span class="blood">{{ p.Blood_Group }}</span></dd></div>
+        <div><dt>Mobile</dt><dd>{{ p.Mobile_No }}</dd></div>
+        <div><dt>Aadhaar</dt><dd>{{ p.Aadhaar_No }}</dd></div>
+        <div class="wide"><dt>Address</dt><dd>{{ p.Address }}</dd></div>
+      </dl>
+    </div>
+
+    <div class="card emergency">
+      <h2>🚑 One-Tap Emergency Card</h2>
+      <div class="e-row"><span>Blood group</span><b>{{ p.Blood_Group }}</b></div>
+      <div class="e-row"><span>Contact</span><b>{{ p.Emergency_Contact_Name }}</b></div>
+      <div class="e-row"><span>Phone</span><b><a href="tel:{{ p.Emergency_Contact_No }}">{{ p.Emergency_Contact_No }}</a></b></div>
+      <div class="e-row"><span>Condition</span><b>{{ p.Latest_Diagnosis }}</b></div>
+      <div style="margin-top:14px;">
+        <a href="{{ url_for('emergency_view', pid=p.Patient_ID) }}" class="btn btn-primary full btn-sm">Open High-Visibility Emergency View →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Follow-Up Reminder Banner -->
+  {% if p.Next_Follow_up and p.Next_Follow_up.lower() != 'as needed' %}
+  <div class="card reminder-card">
+    <div class="r-flex">
+      <div>
+        <span class="pill">⏰ Follow-Up Reminder</span>
+        <h3>Scheduled Review: In {{ p.Next_Follow_up }}</h3>
+        <p class="muted">Physician: <b>{{ p.Latest_Doctor }}</b> (Last visit: {{ p.Latest_Consultation_Date }})</p>
+      </div>
+      <a href="{{ url_for('prep_view') }}" class="btn btn-primary">Prepare for Visit →</a>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Latest Vitals & Quick-Compare -->
+  <div class="card">
+    <h2>Latest Vitals & Clinical Baseline</h2>
+    <div class="vitals">
+      {% for v in vitals %}
+      <div class="vital {{ v.state }}">
+        <span>{{ v.label }}</span>
+        <b>{{ v.value }}<small> {{ v.unit }}</small></b>
+        <em>{{ {'ok':'Normal Baseline','watch':'Watch / Monitor','high':'Elevated'}[v.state] }}</em>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="plan" style="margin-top:16px;">
+      <b>Current Treatment Plan:</b> {{ p.Current_Treatment_Plan }}<br>
+      <b>Primary Attending Physician:</b> {{ p.Latest_Doctor }} ({{ p.Latest_Consultation_Date }}) · <b>Next Follow-up:</b> {{ p.Next_Follow_up }}
+    </div>
+  </div>
+
+  <!-- Smart Medical History Timeline with Consultation QR Codes & PDFs -->
+  <div class="card">
+    <h2>Smart Medical History Timeline</h2>
+    <p class="muted">Chronological consultation log, consultation-specific QR codes, and downloadable PDF visit reports.</p>
+    <div class="timeline">
+      {% for c in consults %}
+      <div class="t-item">
+        <span class="t-dot {{ c.Severity|lower }}"></span>
+        <div class="t-body">
+          <div class="t-top">
+            <div>
+              <b>{{ c.Diagnosis }}</b>
+              <span class="plain-term">💡 <em>{{ explain(c.Diagnosis) }}</em></span>
+            </div>
+            <span class="sev {{ c.Severity|lower }}">{{ c.Severity }}</span>
+          </div>
+          <div class="muted">{{ c.Date }} · Visit {{ c.Visit_No }} · {{ c.Doctor }} ({{ c.Specialist }})</div>
+
+          <div class="chips">
+            {% for s in [c.Symptom_1, c.Symptom_2, c.Symptom_3] if s %}
+              <span class="chip sym" title="{{ explain(s) }}">{{ s }}</span>
+            {% endfor %}
+            {% for t in [c.Treatment_1, c.Treatment_2, c.Treatment_3] if t %}
+              <span class="chip tr">{{ t }}</span>
+            {% endfor %}
+          </div>
+
+          {% if c.Handover_Notes %}
+          <div class="handover-note-box" style="margin-top:8px; font-size:.85rem; color:#0f766e;">
+            <b>Doctor Handover Note:</b> {{ c.Handover_Notes }}
+          </div>
+          {% endif %}
+
+          <div style="display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap;">
+            <a href="{{ url_for('consultation_report', pid=p.Patient_ID, visit_no=c.Visit_No) }}" class="btn btn-sm btn-ghost">📋 Open Visit Report</a>
+            <a href="{{ url_for('download_consultation_pdf', pid=p.Patient_ID, visit_no=c.Visit_No) }}" class="btn btn-sm btn-ghost">📥 Download Visit PDF</a>
+            <span class="muted small">QR Token: <code>{{ c.qr_token }}</code></span>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Medical Document Upload & Document Registry -->
+  <div class="card">
+    <h2>📁 Upload & Secure Medical Documents</h2>
+    <p class="muted">Upload blood reports, X-rays, ECGs, MRI/CT scans, or prescription PDFs.</p>
+
+    <form method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data" style="margin-bottom:20px; padding:16px; background:#f8fafc; border:1px solid var(--line); border-radius:14px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+        <label>Document Category
+          <select name="doc_type" style="display:block; width:100%; margin-top:6px; padding:10px; border-radius:10px; border:1px solid var(--line);">
+            <option value="Blood Report">Blood / Lab Report</option>
+            <option value="X-Ray">X-Ray Scan</option>
+            <option value="ECG">ECG Report</option>
+            <option value="MRI/CT">MRI / CT Scan</option>
+            <option value="Prescription">Prescription Document</option>
+          </select>
+        </label>
+        <label>Associate Visit No. (Optional)
+          <input name="visit_no" placeholder="e.g. 1, 2" style="padding:8px 10px;">
+        </label>
+        <label>Select File (PNG, JPG, PDF)
+          <input type="file" name="file" required style="padding:6px;">
+        </label>
+      </div>
+      <label style="margin-top:10px;">Clinical Notes / Findings
+        <input name="notes" placeholder="e.g. Normal blood sugar levels / Fasting test" style="padding:8px 10px;">
+      </label>
+      <button class="btn btn-primary full" style="margin-top:12px;">Upload Document Securely →</button>
+    </form>
+
+    <h3>Uploaded Medical Documents Registry</h3>
+    {% if docs %}
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px; margin-top:12px;">
+      {% for d in docs %}
+      <div style="padding:14px; border:1px solid var(--line); border-radius:12px; background:#fff;">
+        <span class="tag">{{ d.Doc_Type }}</span>
+        <b style="display:block; margin-top:6px;">{{ d.Original_Name }}</b>
+        <p class="muted small" style="margin:4px 0;">Uploaded: {{ d.Upload_Date }} {% if d.Visit_No %}· Visit #{{ d.Visit_No }}{% endif %}</p>
+        {% if d.Notes %}<p class="small">{{ d.Notes }}</p>{% endif %}
+        <a href="{{ url_for('serve_document', doc_id=d.Doc_ID) }}" target="_blank" class="btn btn-sm btn-ghost full" style="margin-top:8px;">🔒 View Secure File</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">No user uploaded documents on file yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- Linked Investigation Scan Gallery -->
+  <div class="card">
+    <h2>Linked Investigation Scan Gallery</h2>
+    {% if scans %}
+    <div class="scans">
+      {% for c in scans %}
+      <figure>
+        <a href="javascript:void(0);" onclick="openScanModal('{{ url_for('static', filename=c.Scan_File) }}', '{{ c.Scan_Type }} ({{ c.Scan_Body_Part }})', 'Date: {{ c.Date }} · Findings: {{ c.Scan_Findings }} · Doctor: {{ c.Scan_Reporting_Doctor }}');">
+          <img src="{{ url_for('static', filename=c.Scan_File) }}" alt="{{ c.Scan_Type }}">
+        </a>
+        <figcaption>
+          <b>{{ c.Scan_Type }}</b> · {{ c.Date }}<br>
+          <span class="muted">{{ c.Scan_Findings }}</span><br>
+          <span class="muted small">Reporting Doctor: {{ c.Scan_Reporting_Doctor }}</span>
+        </figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">No investigation scan reports on record yet.</p>
+    {% endif %}
+  </div>
+</main>
+
+<footer class="foot">MediQR · Academic demonstration project. Confidential Healthcare System.</footer>
+{% endblock %}

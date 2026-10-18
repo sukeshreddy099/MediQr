@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Patient Visit Preparation Checklist - MediQR{% endblock %}
+{% block content %}
+<main class="container" style="padding-top: 30px;">
+  <div class="card prep-box">
+    <span class="pill">📋 Patient Visit Preparation Checklist</span>
+    <h1>Prepare for your Doctor Consultation</h1>
+    <p class="muted">Complete this interactive checklist before your appointment to ensure a thorough and smooth consultation.</p>
+
+    {% if p %}
+    <div class="card" style="background:#f0fdfa; border:1px solid var(--mint); margin-top:16px;">
+      <h3>Patient Record: {{ p.Name }} ({{ p.Patient_ID }})</h3>
+      <p><b>Attending Physician:</b> {{ p.Latest_Doctor }} · <b>Upcoming Follow-up:</b> {{ p.Next_Follow_up }}</p>
+    </div>
+    {% endif %}
+
+    <div class="prep-checklist" style="margin-top:20px;">
+      <label class="prep-item">
+        <input type="checkbox" checked>
+        <div>
+          <b>1. Bring Current Medications & Strips</b>
+          <p class="muted small">Keep all active prescription strips, inhalers, or insulin pens in your bag.</p>
+        </div>
+      </label>
+
+      <label class="prep-item">
+        <input type="checkbox" checked>
+        <div>
+          <b>2. Bring Previous Investigation Reports & Scans</b>
+          <p class="muted small">X-rays, MRI, blood test reports, and ECG scans from the past 6 months.</p>
+        </div>
+      </label>
+
+      <label class="prep-item">
+        <input type="checkbox">
+        <div>
+          <b>3. List New Symptoms or Changes</b>
+          <p class="muted small">Note down when new symptoms started, severity, and triggers.</p>
+        </div>
+      </label>
+
+      <label class="prep-item">
+        <input type="checkbox">
+        <div>
+          <b>4. Prepare Questions for Your Doctor</b>
+          <p class="muted small">Write down any questions about dosage, side effects, or lifestyle changes.</p>
+        </div>
+      </label>
+
+      <label class="prep-item">
+        <input type="checkbox" checked>
+        <div>
+          <b>5. Keep Emergency / MediQR ID Ready</b>
+          <p class="muted small">Show your MediQR Patient ID or Emergency QR code at the reception desk.</p>
+        </div>
+      </label>
+    </div>
+
+    <div class="card" style="margin-top:24px;">
+      <h2><label for="prep-notes">✍️ My Notes & Questions for Doctor</label></h2>
+      <textarea id="prep-notes" placeholder="e.g. Can I take this medicine after meals? Should I continue the physiotherapy exercises daily?" rows="4" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--line); font-family:inherit;"></textarea>
+    </div>
+
+    <div style="margin-top:20px;">
+      <a href="{{ url_for('profile') if me else url_for('main') }}" class="btn btn-primary">← Return to {{ "Profile" if me else "Home" }}</a>
+    </div>
+  </div>
+</main>
+{% endblock %}

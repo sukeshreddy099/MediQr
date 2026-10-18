@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Admin Control Center - MediQR{% endblock %}
+{% block content %}
+<main class="container" style="padding-top: 30px;">
+  <div class="card admin-hero">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+      <div>
+        <span class="pill">⚙️ System Control Center</span>
+        <h1>MediQR Admin Dashboard</h1>
+        <p class="muted">Logged in as <b>ADMIN</b> · Full System Access & CRUD Permissions</p>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <a href="{{ url_for('audit_view') }}" class="btn btn-sm btn-light">🔒 Global Audit Trail</a>
+        <a href="{{ url_for('logout') }}" class="btn btn-sm btn-light">Log out</a>
+      </div>
+    </div>
+
+    <!-- Admin Metrics Banner -->
+    <div class="mini" style="margin-top:20px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
+      <div style="background:#f0fdfa; border:1px solid var(--mint);"><b>{{ stats.patients }}</b><span>Patients</span></div>
+      <div style="background:#f0fdfa; border:1px solid var(--mint);"><b>{{ stats.visits }}</b><span>Consultations</span></div>
+      <div style="background:#f0fdfa; border:1px solid var(--mint);"><b style="color:var(--green);">{{ stats.active_qrs }}</b><span>Active QR Tokens</span></div>
+      <div style="background:#f0fdfa; border:1px solid var(--mint);"><b style="color:var(--red);">{{ stats.revoked_qrs }}</b><span>Revoked QRs</span></div>
+      <div style="background:#f0fdfa; border:1px solid var(--mint);"><b>{{ stats.docs }}</b><span>Documents</span></div>
+      <div style="background:#f0fdfa; border:1px solid var(--mint);"><b>{{ stats.logs }}</b><span>Audit Events</span></div>
+    </div>
+  </div>
+
+  <!-- Add New Patient Form -->
+  <div class="card">
+    <h2>➕ Add New Patient Record</h2>
+    <form method="post" action="{{ url_for('admin_add_patient') }}" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+      <label>Patient ID (e.g. P-009)
+        <input name="pid" placeholder="P-009" required>
+      </label>
+      <label>Full Name
+        <input name="name" placeholder="Full Name" required>
+      </label>
+      <label>Date of Birth
+        <input name="dob" placeholder="DD-MM-YYYY" required>
+      </label>
+      <label>Gender
+        <select name="gender" style="display:block; width:100%; margin-top:6px; padding:12px; border-radius:12px; border:1.5px solid var(--line);">
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </label>
+      <label>Blood Group
+        <input name="blood_group" placeholder="O+, A+, B-, etc." required>
+      </label>
+      <label>Mobile Number
+        <input name="mobile" placeholder="9876543210" required>
+      </label>
+      <label>Aadhaar Number
+        <input name="aadhaar" placeholder="XXXX XXXX 1234">
+      </label>
+      <label>Address
+        <input name="address" placeholder="City / Address">
+      </label>
+      <label>Primary Diagnosis
+        <input name="diagnosis" placeholder="e.g. Hypertension">
+      </label>
+      <label>Treatment Plan
+        <input name="plan" placeholder="Medication & diet control">
+      </label>
+      <div style="grid-column: 1 / -1; margin-top:8px;">
+        <button class="btn btn-primary full">Create Patient Record & Generate QR Code →</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Patient Management Registry Table -->
+  <div class="card">
+    <h2>👥 Patient Registry Management</h2>
+    <div class="scroll">
+      <table style="width:100%; border-collapse:collapse; font-size:.92rem;">
+        <thead>
+          <tr style="background:#f0fdfa; color:var(--teal-d); border-bottom:2px solid var(--mint);">
+            <th style="padding:10px; text-align:left;">ID</th>
+            <th style="padding:10px; text-align:left;">Name</th>
+            <th style="padding:10px; text-align:left;">DOB</th>
+            <th style="padding:10px; text-align:left;">Blood</th>
+            <th style="padding:10px; text-align:left;">Mobile</th>
+            <th style="padding:10px; text-align:left;">Primary Diagnosis</th>
+            <th style="padding:10px; text-align:center;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in patients %}
+          <tr style="border-bottom:1px solid var(--line);">
+            <td style="padding:10px;"><b>{{ p.Patient_ID }}</b></td>
+            <td style="padding:10px;">{{ p.Name }}</td>
+            <td style="padding:10px;">{{ p.DOB }}</td>
+            <td style="padding:10px;"><span class="blood">{{ p.Blood_Group }}</span></td>
+            <td style="padding:10px;">{{ p.Mobile_No }}</td>
+            <td style="padding:10px;">{{ p.Latest_Diagnosis }}</td>
+            <td style="padding:10px; text-align:center;">
+              <div style="display:flex; gap:6px; justify-content:center;">
+                <a href="{{ url_for('emergency_view', pid=p.Patient_ID) }}" class="btn btn-sm btn-ghost" title="Emergency Card">🚑</a>
+                <a href="{{ url_for('handover_view', pid=p.Patient_ID) }}" class="btn btn-sm btn-ghost" title="Handover Snapshot">👨‍⚕️</a>
+                <a href="{{ url_for('download_patient_pdf', pid=p.Patient_ID) }}" class="btn btn-sm btn-ghost" title="Download PDF Summary">📥</a>
+                <form method="post" action="{{ url_for('admin_delete_patient', pid=p.Patient_ID) }}" style="display:inline;" onsubmit="return confirm('Delete patient {{ p.Patient_ID }} and all history?');">
+                  <button class="btn btn-sm btn-light" style="color:#dc2626;" title="Delete Patient">🗑️</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add New Consultation Visit Form -->
+  <div class="card">
+    <h2>➕ Add Consultation Visit Entry</h2>
+    <form method="post" action="{{ url_for('admin_add_consultation') }}" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+      <label>Target Patient ID
+        <select name="pid" style="display:block; width:100%; margin-top:6px; padding:12px; border-radius:12px; border:1.5px solid var(--line);" required>
+          {% for p in patients %}
+          <option value="{{ p.Patient_ID }}">{{ p.Patient_ID }} — {{ p.Name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Physician Name
+        <input name="doctor" placeholder="Dr. Arun Kumar" required>
+      </label>
+      <label>Specialty
+        <input name="specialist" placeholder="General Physician / Cardiologist" required>
+      </label>
+      <label>Diagnosis
+        <input name="diagnosis" placeholder="e.g. Essential Hypertension" required>
+      </label>
+      <label>Symptom 1
+        <input name="symptom_1" placeholder="Headache">
+      </label>
+      <label>Symptom 2
+        <input name="symptom_2" placeholder="Dizziness">
+      </label>
+      <label>Prescription / Treatment 1
+        <input name="treatment_1" placeholder="Amlodipine 5mg">
+      </label>
+      <label>Severity
+        <select name="severity" style="display:block; width:100%; margin-top:6px; padding:12px; border-radius:12px; border:1.5px solid var(--line);">
+          <option value="Mild">Mild</option>
+          <option value="Moderate">Moderate</option>
+          <option value="Severe">Severe</option>
+        </select>
+      </label>
+      <div style="grid-column: 1 / -1;">
+        <label>Clinical Handover Note
+          <input name="notes" placeholder="Note for subsequent consulting doctors...">
+        </label>
+      </div>
+      <div style="grid-column: 1 / -1; margin-top:8px;">
+        <button class="btn btn-primary full">Record Consultation Visit & Generate Consultation QR Code →</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- System Audit Logs Stream -->
+  <div class="card">
+    <h2>🔒 Recent Audit Log Activity Stream</h2>
+    <div class="scroll">
+      <table style="width:100%; border-collapse:collapse; font-size:.88rem;">
+        <thead>
+          <tr style="background:#f0fdfa; color:var(--teal-d); border-bottom:2px solid var(--mint);">
+            <th style="padding:8px;">Timestamp</th>
+            <th style="padding:8px;">User ID</th>
+            <th style="padding:8px;">Action Event</th>
+            <th style="padding:8px;">Target Resource</th>
+            <th style="padding:8px;">IP</th>
+            <th style="padding:8px;">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for l in logs %}
+          <tr style="border-bottom:1px solid var(--line);">
+            <td style="padding:8px;">{{ l.Timestamp }}</td>
+            <td style="padding:8px;"><b>{{ l.User_ID }}</b></td>
+            <td style="padding:8px;"><span class="tag">{{ l.Action }}</span></td>
+            <td style="padding:8px;"><code>{{ l.Resource }}</code></td>
+            <td style="padding:8px;">{{ l.IP_Address }}</td>
+            <td style="padding:8px;">{{ l.Status }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+{% endblock %}

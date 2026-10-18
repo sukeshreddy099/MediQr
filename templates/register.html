@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+<div class="auth">
+  <aside class="auth-side">
+    <div class="logo big">+</div>
+    <h2>Welcome to MediQR</h2>
+    <p>Sign in with your Patient ID or Admin Account to see consultations, scans, health suggestions, and system controls.</p>
+    <ul>
+      <li>✔ Complete medical history</li>
+      <li>✔ Scan reports in one place</li>
+      <li>✔ Personalised health tips</li>
+      <li>✔ Full System Admin Panel</li>
+    </ul>
+  </aside>
+
+  <section class="auth-box card">
+    <div class="tabs">
+      <a href="{{ url_for('register', tab='login') }}" class="{{ 'on' if tab != 'signup' }}">Sign in</a>
+      <a href="{{ url_for('register', tab='signup') }}" class="{{ 'on' if tab == 'signup' }}">Register</a>
+    </div>
+
+    {% if tab == 'signup' %}
+      <h2>Create your account</h2>
+      <p class="muted">Verify yourself with details from your patient record, then choose a password.</p>
+      <form method="post" action="{{ url_for('signup') }}">
+        <label>Patient ID<input name="pid" placeholder="e.g. P-005" required></label>
+        <label>Date of birth<input name="dob" placeholder="DD-MM-YYYY" required></label>
+        <label>Registered mobile number<input name="mobile" inputmode="numeric" required></label>
+        <label>Password<input type="password" name="password" minlength="6" required></label>
+        <label>Confirm password<input type="password" name="confirm" minlength="6" required></label>
+        <button class="btn btn-primary full">Register</button>
+      </form>
+    {% else %}
+      <h2>Sign in</h2>
+      <p class="muted">Enter your Patient ID or Admin ID and password.</p>
+      <form method="post" action="{{ url_for('login') }}">
+        <label>Patient ID / Admin ID<input name="pid" id="pidInput" placeholder="e.g. P-001 or ADMIN" autocomplete="username" required autofocus></label>
+        <label>Password<input type="password" name="password" id="passInput" autocomplete="current-password" required></label>
+        <button class="btn btn-primary full">Sign in</button>
+      </form>
+      <p class="switch">New here? <a href="{{ url_for('register', tab='signup') }}">Create an account</a></p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

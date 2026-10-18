@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}AI-Enabled QR Medical History System{% endblock %}
+{% block content %}
+<section class="hero-modern">
+  <div class="hero-content">
+    <div class="hero-text-side">
+      <span class="pill-badge">AI-Enabled QR-Based</span>
+      <h1 class="hero-title">Your Health History,<br><span class="hero-highlight">One QR Away</span></h1>
+      <p class="hero-desc">MediQR helps you store, access and manage your medical history, treatment details and scan reports — securely and instantly, with a simple QR code.</p>
+
+      <div class="hero-cta-group">
+        <a href="{{ url_for('scanner') }}" class="btn btn-primary btn-scan">
+          <span>Scan QR</span> →
+        </a>
+        <a href="#featuresSection" class="btn btn-ghost btn-learn">Learn More</a>
+      </div>
+    </div>
+
+    <div class="hero-graphic-side">
+      <div class="phone-mockup-container">
+        <!-- Floating feature indicator nodes -->
+        <div class="floating-badge badge-1">🩺 Medical History</div>
+        <div class="floating-badge badge-2">📁 Scan Reports</div>
+        <div class="floating-badge badge-3">💊 Treatment Details</div>
+        <div class="floating-badge badge-4">📈 Health Insights</div>
+
+        <!-- Phone screen mockup -->
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-app-header">
+            <span class="logo-mini">+</span> <b>MediQR</b>
+          </div>
+          <div class="phone-app-body">
+            <p class="phone-prompt">Scan to View Medical History</p>
+            <div class="phone-qr-box">
+              <svg viewBox="0 0 100 100" width="120" height="120" style="background:#fff; padding:6px; border-radius:12px;">
+                <rect x="10" y="10" width="28" height="28" fill="#0f766e"/>
+                <rect x="62" y="10" width="28" height="28" fill="#0f766e"/>
+                <rect x="10" y="62" width="28" height="28" fill="#0f766e"/>
+                <rect x="45" y="45" width="15" height="15" fill="#0e7490"/>
+                <rect x="65" y="65" width="22" height="22" fill="#0f766e"/>
+              </svg>
+            </div>
+            <div class="phone-secure-badge">
+              <span>🔒 Secure · Private · Trusted</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Quick Features Bar -->
+  <div class="hero-bottom-bar">
+    <div class="hb-item">
+      <i>🛡️</i>
+      <div>
+        <b>Secure Access</b>
+        <p class="muted small">Your data, your control</p>
+      </div>
+    </div>
+    <div class="hb-item">
+      <i>⚡</i>
+      <div>
+        <b>Instant Information</b>
+        <p class="muted small">Quick & easy access</p>
+      </div>
+    </div>
+    <div class="hb-item">
+      <i>👥</i>
+      <div>
+        <b>For Patients & Doctors</b>
+        <p class="muted small">Better collaboration</p>
+      </div>
+    </div>
+    <div class="hb-item">
+      <i>🤖</i>
+      <div>
+        <b>AI-Powered Insights</b>
+        <p class="muted small">Smarter health decisions</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="container" id="featuresSection">
+  <h2 class="section-title">Innovative Patient & Doctor Qualities</h2>
+  <div class="features">
+    <div class="feature"><i>👨‍⚕️</i><h3>Doctor Handover Snapshot</h3><p>Instant clinical summary of conditions, active treatments, and observations for cross-specialist visits.</p></div>
+    <div class="feature"><i>📋</i><h3>Patient Visit Preparation</h3><p>Interactive checklist for medicines, reports, and questions before seeing your doctor.</p></div>
+    <div class="feature"><i>⏰</i><h3>Follow-Up Reminder</h3><p>Automated countdown and review notifications to prevent missed consultations.</p></div>
+    <div class="feature"><i>📊</i><h3>Doctor Quick-Compare</h3><p>Side-by-side baseline vs. current vitals comparison to spot improvement or deterioration instantly.</p></div>
+    <div class="feature"><i>📈</i><h3>Treatment Response</h3><p>Decision-support indicators (Improving, Stable, Needs Attention) across visits.</p></div>
+    <div class="feature"><i>⚠️</i><h3>Missing-Info Alerts</h3><p>Automated detection highlighting unrecorded vitals or incomplete diagnostic reports.</p></div>
+    <div class="feature"><i>💡</i><h3>Patient-Friendly Language</h3><p>Plain-English translations for complex medical jargon and diagnostic terms.</p></div>
+    <div class="feature"><i>🚑</i><h3>One-Tap Emergency View</h3><p>High-visibility first-responder view showing blood group, emergency contact, and major conditions.</p></div>
+    <div class="feature"><i>📝</i><h3>Consultation Handover Notes</h3><p>Structured clinical observations left by doctors for subsequent healthcare providers.</p></div>
+    <div class="feature"><i>🗓️</i><h3>Smart Medical Timeline</h3><p>Chronologically organized visits, treatment changes, investigations, and follow-ups.</p></div>
+    <div class="feature"><i>💯</i><h3>Profile Completeness Score</h3><p>Live completeness percentage meter and recommendations for missing profile fields.</p></div>
+    <div class="feature"><i>🩻</i><h3>Linked Investigation Reports</h3><p>Two-way linking connecting X-ray, MRI, and ECG scans directly to their consultation visits.</p></div>
+  </div>
+
+</main>
+<footer class="foot">MediQR · Academic demonstration project. Decision-support guidance, not medical diagnosis.</footer>
+{% endblock %}

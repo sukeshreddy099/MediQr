@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Consultation Report Visit {{ consult.Visit_No }} - {{ p.Name }}{% endblock %}
+{% block content %}
+<main class="container" style="padding-top: 30px;">
+  <div class="card consult-report-box">
+    <div class="handover-header">
+      <div>
+        <span class="pill">📋 Official Consultation Visit Report</span>
+        <h1>Visit #{{ consult.Visit_No }} — {{ consult.Date }}</h1>
+        <p class="muted">Patient: <b>{{ p.Name }}</b> ({{ p.Patient_ID }}) · Age: {{ age }} yrs · Blood Group: <b>{{ p.Blood_Group }}</b></p>
+      </div>
+      <div class="qr-box text-center">
+        <a href="{{ url_for('qr_image', token_id=qr_token) }}" target="_blank">
+          <img src="{{ url_for('qr_image', token_id=qr_token) }}" width="80" height="80" alt="Consultation QR">
+        </a>
+        <br><span class="muted small">Scan Token</span>
+      </div>
+    </div>
+
+    <div class="two">
+      <div class="card" style="margin:0;">
+        <h2>🩺 Physician & Clinical Details</h2>
+        <p><b>Attending Physician:</b> {{ consult.Doctor }}</p>
+        <p><b>Specialty:</b> {{ consult.Specialist }}</p>
+        <p><b>Visit Date:</b> {{ consult.Date }}</p>
+        <p><b>Visit Severity:</b> <span class="sev {{ consult.Severity|lower }}">{{ consult.Severity }}</span></p>
+      </div>
+
+      <div class="card" style="margin:0;">
+        <h2>📄 Diagnostic Summary</h2>
+        <p><b>Primary Diagnosis:</b> <span class="tag">{{ consult.Diagnosis }}</span></p>
+        <p><b>Reported Symptoms:</b> {{ consult.Symptom_1 }} {% if consult.Symptom_2 %}· {{ consult.Symptom_2 }}{% endif %} {% if consult.Symptom_3 %}· {{ consult.Symptom_3 }}{% endif %}</p>
+        <p><b>Prescribed Regimen:</b><br/>
+          1. {{ consult.Treatment_1 }}<br/>
+          {% if consult.Treatment_2 %}2. {{ consult.Treatment_2 }}<br/>{% endif %}
+          {% if consult.Treatment_3 %}3. {{ consult.Treatment_3 }}{% endif %}
+        </p>
+      </div>
+    </div>
+
+    {% if consult.Handover_Notes %}
+    <div class="card" style="margin-top:20px; background:#f0fdfa; border-left:4px solid var(--teal);">
+      <h2>📝 Doctor Handover Note</h2>
+      <p style="font-size:1.02rem;">{{ consult.Handover_Notes }}</p>
+    </div>
+    {% endif %}
+
+    {% if consult.Scan_Type %}
+    <div class="card" style="margin-top:20px;">
+      <h2>🩻 Attached Investigation Scan & Findings</h2>
+      <p><b>Scan Type:</b> {{ consult.Scan_Type }} ({{ consult.Scan_Body_Part }})</p>
+      <p><b>Radiologist Findings:</b> {{ consult.Scan_Findings }}</p>
+      <p><b>Reporting Doctor:</b> {{ consult.Scan_Reporting_Doctor }}</p>
+      {% if consult.Scan_File %}
+      <div style="margin-top:12px;">
+        <a href="{{ url_for('static', filename=consult.Scan_File) }}" target="_blank" class="btn btn-sm btn-ghost">🔍 View High-Res Scan Image →</a>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div style="margin-top:24px; display:flex; gap:12px; flex-wrap:wrap;">
+      <a href="{{ url_for('download_consultation_pdf', pid=p.Patient_ID, visit_no=consult.Visit_No) }}" class="btn btn-primary">📥 Download Consultation PDF Report</a>
+      <a href="{{ url_for('profile') }}" class="btn btn-ghost">← Return to Full Patient Profile</a>
+    </div>
+  </div>
+</main>
+{% endblock %}
